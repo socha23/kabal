@@ -7,49 +7,55 @@ function point(x, y) {
 
 const POINT_ZERO = point(0, 0)
 
+
+
 class Game {
-  constructor() {
+  constructor(handSize = 5) {
+    
+    this.hand = ["c0"]
+    
     this.cards = {
       "c0": {id: "c0", name: "Fool", image: RiderWaite.C0_Fool},
       "c1": {id: "c1", name: "Magician", image: RiderWaite.C1_Magician},
     }
 
     this.slots = {
-      "a1": {id: "a1", name: "area 1", position: point(50, 50), card: "c0"},
-      "a2": {id: "a2", name: "area 2", position: point(250, 50), card: "c1"},
+      "a1": {id: "a1", name: "area 1", position: point(50, 50)},
+      "a2": {id: "a2", name: "area 2", position: point(250, 50)},
       "a3": {id: "a3", name: "area 3", position: point(450, 50)},
       "a4": {id: "a4", name: "area 4", position: point(650, 50)},
     }
+
+    this.slottedCards = {"a1": "c1"} // slot id to card id
   }
 
-  findSlotByCardId(cardId) {
-    const slot = Object.values(this.slots).find(params => params.card === cardId)
-    if (!slot) {
-      throw `Slot not found for card ${cardId}`
-    }
-    return slot
+  findSlotIdByCardId(cardId) {
+    console.log("loofing for ", cardId)
+    return Object.keys(this.slots).find(sId => (this.slottedCards[sId] === cardId))
   }
 
   getViewModel() {
     return {
-      cards: Object.values(this.cards)
-      .map(c => ({
-          position: this.findSlotByCardId(c.id).position, 
-          ...c
-      })),
-      slots: Object.values(this.slots),
+      slots: Object.values(this.slots)
+        .map(s =>  this.slottedCards[s.id] ? {...s, card: this.cards[this.slottedCards[s.id]]} : s),
+      hand: this.hand
+        .map(cardId => this.cards[cardId]),
     }
   }
 
   getValidDropTargetIds(cardId) {
-    return Object.values(this.slots)
-      .filter(s => ! ("card" in s))
-      .map(s => s.id)
+    return Object.keys(this.slots)
+      .filter(sId => !(this.slottedCards[sId]))
   }
 
   onMoveCardToSlot(cardId, slotId) {
-    delete this.slots[this.findSlotByCardId(cardId).id].card
-    this.slots[slotId].card = cardId
+    if (this.findSlotIdByCardId(cardId)) {
+      this.slottedCards[this.findSlotIdByCardId(cardId)] = null
+      this.slottedCards[slotId] = cardId
+    } else if (this.hand.includes(cardId)) {
+      this.hand.splice(this.hand.indexOf(cardId), 1)
+      this.slottedCards[slotId] = cardId
+    }
   }
 }
 
@@ -66,7 +72,6 @@ const CARD_WIDTH = CARD_STYLE.imageWidth + 2 * CARD_STYLE.padding
 
 const Card = ({
   id,
-  position = POINT_ZERO,
   draggable = true,
   name = "Unnamed card",
   image = "",
@@ -75,11 +80,8 @@ const Card = ({
   onDragStart = e => {},
   onDragEnd = e => {},
 }) => <div style={{
-  position: "absolute",
   width: width,
   height: height,
-  top: position.y,
-  left: position.x,
   border: "1px solid black",
   padding: 10,
   backgroundColor: "#bbb",
@@ -120,8 +122,11 @@ const Slot = ({
   dropPossible = false,
   position = POINT_ZERO,
   name = "Unnamed slot",
+  card = null,
   width = SLOT_STYLE.width,
   height = SLOT_STYLE.height,
+  onCardDragStart = (cardId) => {},
+  onCardDragEnd = (cardId) => {},
   onCardDrop = (slotId) => {}
 }) => <div
   onDragOver={e => { e.preventDefault(); return false }}
@@ -138,10 +143,23 @@ const Slot = ({
     borderColor: dropPossible ? SLOT_STYLE.slotDroppableBorderColor : "transparent",
     borderRadius: SLOT_STYLE.slotBorderRadius,
   }}>
+    {
+      card && <div style={{
+        position: "absolute",
+        zIndex: 1,
+        top: 0,
+        left: 0,
+      }}>
+        <Card onDragStart={_ => {onCardDragStart(card.id)}} onDragEnd={_ => {onCardDragEnd(card.id)}} {...card}/>
+        </div>
+    }
     <div style={{
       border: SLOT_STYLE.innerBorder,
       width: SLOT_STYLE.width,
       height: SLOT_STYLE.height,
+      position: "absolute",
+      top: 0,
+      left: 0,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -155,7 +173,7 @@ const DEFAULT_BOARD_HEIGHT = 600
 
 function BoardDisplay({
   slots = [],
-  cards = [],
+  hand = [],
   height = DEFAULT_BOARD_HEIGHT,
   width = DEFAULT_BOARD_WITDH,
   onCardDragStart = (cardId) => {},
@@ -174,17 +192,31 @@ function BoardDisplay({
     {
       slots.map(a => <Slot key={a.id} 
         dropPossible={availableDropTargetIds.includes(a.id)} 
+        onCardDragStart={onCardDragStart}
+        onCardDragEnd={onCardDragEnd}
         onCardDrop={onCardDrop}
         {...a} 
       />)
     }
+    <div style={{
+      position: "absolute",
+      left: 80,
+      top: 300
+    }}>      
     {
-      cards.map(c => <Card key={c.id} 
-        onDragStart={_ => {onCardDragStart(c.id)}} 
-        onDragEnd={_ => {onCardDragEnd(c.id)}}         
-        {...c}        
-      />)
+      hand.map((c, idx) => <div key={c.id} style={{
+        position: "absolute",
+        top: 0,
+        left: idx * CARD_WIDTH + 20
+      }}>
+        <Card
+          onDragStart={_ => {onCardDragStart(c.id)}} 
+          onDragEnd={_ => {onCardDragEnd(c.id)}}         
+          {...c}        
+        />        
+      </div>)
     }
+    </div>
   </div>
 }
 
@@ -218,12 +250,11 @@ function GameContainer({game}) {
   })
 
   return <BoardDisplay
-    slots={gameViewModel.slots}
-    cards={gameViewModel.cards}
+    {...gameViewModel}
     availableDropTargetIds={currentDraggedId ? game.getValidDropTargetIds(currentDraggedId) : []}
     onCardDragStart={id => {setCurrentDraggedId(id)}}
     onCardDragEnd={_ => {setCurrentDraggedId(null)}}
-    onCardDrop={(slotId) => game.onMoveCardToSlot(currentDraggedId, slotId)}
+    onCardDrop={(slotId) => {game.onMoveCardToSlot(currentDraggedId, slotId)}}
   />
 }
 
