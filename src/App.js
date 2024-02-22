@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import RiderWaite from "./rider_waite"
 
 function point(x, y) {
   return { x: x, y: y }
@@ -9,13 +10,13 @@ const POINT_ZERO = point(0, 0)
 class Game {
   constructor() {
     this.cards = {
-      "c1": {id: "c1", name: "Card 1"},
-      "c2": {id: "c2", name: "Card 2"},
+      "c0": {id: "c0", name: "Fool", image: RiderWaite.C0_Fool},
+      "c1": {id: "c1", name: "Magician", image: RiderWaite.C1_Magician},
     }
 
     this.slots = {
-      "a1": {id: "a1", name: "area 1", position: point(50, 50), card: "c1"},
-      "a2": {id: "a2", name: "area 2", position: point(250, 50), card: "c2"},
+      "a1": {id: "a1", name: "area 1", position: point(50, 50), card: "c0"},
+      "a2": {id: "a2", name: "area 2", position: point(250, 50), card: "c1"},
       "a3": {id: "a3", name: "area 3", position: point(450, 50)},
       "a4": {id: "a4", name: "area 4", position: point(650, 50)},
     }
@@ -52,17 +53,25 @@ class Game {
   }
 }
 
-const DEFAULT_CARD_WIDTH = 120
-const DEFAULT_CARD_HEIGHT = 200
+const CARD_STYLE = {
+  imageHeight: 200,
+  imageWidth: 120,
+  imageBorderWidth: 1,
+  titleBarHeight: 20,
+  padding: 10,
+}
 
+const CARD_HEIGHT = CARD_STYLE.titleBarHeight + CARD_STYLE.imageHeight + 2 * CARD_STYLE.padding
+const CARD_WIDTH = CARD_STYLE.imageWidth + 2 * CARD_STYLE.padding
 
 const Card = ({
   id,
   position = POINT_ZERO,
   draggable = true,
   name = "Unnamed card",
-  width = DEFAULT_CARD_WIDTH,
-  height = DEFAULT_CARD_HEIGHT,
+  image = "",
+  width = CARD_WIDTH,
+  height = CARD_HEIGHT,
   onDragStart = e => {},
   onDragEnd = e => {},
 }) => <div style={{
@@ -71,13 +80,29 @@ const Card = ({
   height: height,
   top: position.y,
   left: position.x,
-  border: "1px solid black"
+  border: "1px solid black",
+  padding: 10,
+  backgroundColor: "#bbb",
+  display: "flex",
+  flexDirection: "column",
 }}
   draggable={draggable}
   onDragStart={onDragStart}
   onDragEnd={onDragEnd}
 >
-    {name}</div>
+    <div style={{
+      color: "black",
+      height: CARD_STYLE.titleBarHeight
+    }}>{name}</div>
+    <div style={{
+      border: "1px solid black",
+      backgroundImage: `url("${image}")`,
+      height: CARD_STYLE.imageHeight,
+      width: CARD_STYLE.imageWidth,
+    }}>
+    </div>
+    
+  </div>
 
 
 const SLOT_STYLE = {
@@ -85,13 +110,10 @@ const SLOT_STYLE = {
   slotPadding: 10,
   slotBorderRadius: 10,
   slotDroppableBorderColor: "green",
-  width: 120,
-  height: 200,
+  width: CARD_WIDTH,
+  height: CARD_HEIGHT,
   innerBorder: "1px solid #888",
 }
-
-
-
 
 const Slot = ({
   id,
