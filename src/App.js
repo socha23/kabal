@@ -55,6 +55,7 @@ class Game {
 const DEFAULT_CARD_WIDTH = 120
 const DEFAULT_CARD_HEIGHT = 200
 
+
 const Card = ({
   id,
   position = POINT_ZERO,
@@ -79,29 +80,53 @@ const Card = ({
     {name}</div>
 
 
-const DEFAULT_SLOT_WIDTH = 120
-const DEFAULT_SLOT_HEIGHT = 200
+const SLOT_STYLE = {
+  slotBorderWidth: 5, 
+  slotPadding: 10,
+  slotBorderRadius: 10,
+  slotDroppableBorderColor: "green",
+  width: 120,
+  height: 200,
+  innerBorder: "1px solid #888",
+}
+
+
+
 
 const Slot = ({
   id,
   dropPossible = false,
   position = POINT_ZERO,
   name = "Unnamed slot",
-  width = DEFAULT_SLOT_WIDTH,
-  height = DEFAULT_SLOT_HEIGHT,
+  width = SLOT_STYLE.width,
+  height = SLOT_STYLE.height,
   onCardDrop = (slotId) => {}
 }) => <div
   onDragOver={e => { e.preventDefault(); return false }}
   onDrop={e => {onCardDrop(id)}}
   style={{
     position: "absolute",
-    backgroundColor: dropPossible ? "green" : "transparent",
-    width: width,
-    height: height,
-    top: position.y,
-    left: position.x,
-    border: "1px dashed #888"
-  }}>{name}</div>
+    width: width + 2 * (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
+    height: height + 2 * (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
+    top: position.y - (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
+    left: position.x - (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
+    padding: SLOT_STYLE.slotPadding,
+    borderWidth: SLOT_STYLE.slotBorderWidth,
+    borderStyle: "solid",    
+    borderColor: dropPossible ? SLOT_STYLE.slotDroppableBorderColor : "transparent",
+    borderRadius: SLOT_STYLE.slotBorderRadius,
+  }}>
+    <div style={{
+      border: SLOT_STYLE.innerBorder,
+      width: SLOT_STYLE.width,
+      height: SLOT_STYLE.height,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}>
+      <div>{name}</div>
+    </div>
+  </div>
 
 const DEFAULT_BOARD_WITDH = 800
 const DEFAULT_BOARD_HEIGHT = 600
