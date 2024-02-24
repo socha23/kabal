@@ -117,8 +117,10 @@ const DEFAULT_BOARD_HEIGHT = 600
 function BoardDisplay({
   slots = [],
   hand = [],
+  drawDeckSize = 0,
   height = DEFAULT_BOARD_HEIGHT,
   width = DEFAULT_BOARD_WITDH,
+  onDrawDeckClick = () => {},
   onCardDragStart = (cardId) => {},
   onCardDragEnd = (cardId) => {},
   onCardDrop = (slotId) => {},
@@ -160,6 +162,16 @@ function BoardDisplay({
       </div>)
     }
     </div>
+    <div style={{position: "absolute", bottom: 0}}>
+      <div style={{
+          border: "1px solid #ddd",
+          padding: 15,
+          cursor: "pointer"
+
+      }}
+        onClick={e => {onDrawDeckClick()}}
+      >DRAW CARD ({drawDeckSize})</div>
+    </div>
   </div>
 }
 
@@ -198,6 +210,7 @@ function GameContainer({game}) {
     onCardDragStart={id => {setCurrentDraggedId(id)}}
     onCardDragEnd={_ => {setCurrentDraggedId(null)}}
     onCardDrop={(slotId) => {game.onMoveCardToSlot(currentDraggedId, slotId)}}
+    onDrawDeckClick={_ => {game.onDrawDeckClick()}}
   />
 }
 

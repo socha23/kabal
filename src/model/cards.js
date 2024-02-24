@@ -1,7 +1,39 @@
 import { point } from "./geometry"
 import RiderWaite from "../rider_waite/rider_waite"
 import Deck from "./deck"
-import { starterCards } from "./cards"
+
+var autoinc = 0
+
+const MAJOR_ARCANA = {
+  fool: {name: "Fool", image: RiderWaite.C0_Fool},
+  magician: {name: "Magician", image: RiderWaite.C1_Magician},
+  priestess: {name: "Priestess", image: RiderWaite.C2_Priestess},
+  empress: {name: "Empress", image: RiderWaite.C3_Empress},
+  emperor: {name: "Emperor", image: RiderWaite.C4_Emperor},
+}
+
+function card(deck, type) {
+  return createCard(type, deck[type])
+}
+
+function createCard(type, template) {
+  return {id: "card_" + type + "_" + autoinc++, type: type, ...template}
+}
+
+export function starterCards() {
+  return [
+    card(MAJOR_ARCANA, "fool"),
+    card(MAJOR_ARCANA, "fool"),
+    card(MAJOR_ARCANA, "magician"),
+    card(MAJOR_ARCANA, "magician"),
+    card(MAJOR_ARCANA, "priestess"),
+    card(MAJOR_ARCANA, "priestess"),
+    card(MAJOR_ARCANA, "empress"),
+    card(MAJOR_ARCANA, "empress"),
+    card(MAJOR_ARCANA, "emperor"),
+    card(MAJOR_ARCANA, "emperor"),
+  ]
+}
 
 class Game {
     constructor(handSize = 5) {
@@ -10,7 +42,10 @@ class Game {
 
       this.hand = []
       
-      this.cards = {}
+      this.cards = {
+        "c0": {id: "c0", name: "Fool", image: RiderWaite.C0_Fool},
+        "c1": {id: "c1", name: "Magician", image: RiderWaite.C1_Magician},
+      }
   
       this.slots = {
         "a1": {id: "a1", name: "area 1", position: point(50, 50)},
@@ -21,23 +56,8 @@ class Game {
   
       this.slottedCards = {"a1": "c1"} // slot id to card id
     
-      this.drawDeck = new Deck()
+      this.drawDeck = new Deck(["c0", "c1"])
       this.discardDeck = new Deck()
-
-      this.initializeDrawDeck()
-    }
-
-
-    initializeDrawDeck() {
-        starterCards().forEach(c => {
-            this.registerCard(c)
-            this.drawDeck.addCard(c.id)
-        })
-        this.drawDeck.shuffle()
-    }
-
-    registerCard(card) {
-        this.cards[card.id] = card
     }
 
     drawCard() {

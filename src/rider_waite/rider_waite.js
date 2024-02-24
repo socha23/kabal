@@ -5,3 +5,5 @@ export default {
     C3_Empress: require("./riderwaite_3_empress.png"),
     C4_Emperor: require("./riderwaite_4_emperor.png"), 
 }
+
+
