@@ -66,7 +66,7 @@ class Game {
         .filter(sId => !(this.slottedCards[sId]))
     }
   
-    onMoveCardToSlot(cardId, slotId) {
+    onDropCardOnSlot(cardId, slotId) {
       if (this.findSlotIdByCardId(cardId)) {
         this.slottedCards[this.findSlotIdByCardId(cardId)] = null
         this.slottedCards[slotId] = cardId

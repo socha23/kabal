@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import Game from "./model/game"
-
+import useAnimationFrame from "./useAnimationFrame"
 
 const CARD_STYLE = {
   imageHeight: 200,
@@ -114,6 +114,33 @@ const Slot = ({
 const DEFAULT_BOARD_WITDH = 800
 const DEFAULT_BOARD_HEIGHT = 600
 
+
+const Hand = ({
+  cards, 
+  onCardDragStart = (cardId) => {},
+  onCardDragEnd = (cardId) => {},
+  onCardDrop = () => {}
+}) => <div style={{
+  position: "absolute",
+  left: 80,
+  top: 300
+}}>
+{
+  cards.map((c, idx) => <div key={c.id} style={{
+    position: "absolute",
+    top: 0,
+    left: idx * CARD_WIDTH + 20
+  }}>
+    <Card
+      onDragStart={_ => {onCardDragStart(c.id)}} 
+      onDragEnd={_ => {onCardDragEnd(c.id)}}         
+      {...c}        
+    />        
+  </div>)
+}
+</div>
+
+
 function BoardDisplay({
   slots = [],
   hand = [],
@@ -123,7 +150,7 @@ function BoardDisplay({
   onDrawDeckClick = () => {},
   onCardDragStart = (cardId) => {},
   onCardDragEnd = (cardId) => {},
-  onCardDrop = (slotId) => {},
+  onDropCardOnSlot = (slotId) => {},
   availableDropTargetIds = []
 
 }) {
@@ -139,29 +166,15 @@ function BoardDisplay({
         dropPossible={availableDropTargetIds.includes(a.id)} 
         onCardDragStart={onCardDragStart}
         onCardDragEnd={onCardDragEnd}
-        onCardDrop={onCardDrop}
+        onCardDrop={onDropCardOnSlot}
         {...a} 
       />)
     }
-    <div style={{
-      position: "absolute",
-      left: 80,
-      top: 300
-    }}>      
-    {
-      hand.map((c, idx) => <div key={c.id} style={{
-        position: "absolute",
-        top: 0,
-        left: idx * CARD_WIDTH + 20
-      }}>
-        <Card
-          onDragStart={_ => {onCardDragStart(c.id)}} 
-          onDragEnd={_ => {onCardDragEnd(c.id)}}         
-          {...c}        
-        />        
-      </div>)
-    }
-    </div>
+    <Hand 
+      cards={hand} 
+      onCardDragStart={onCardDragStart} 
+      onCardDragEnd={onCardDragEnd}/>
+    
     <div style={{position: "absolute", bottom: 0}}>
       <div style={{
           border: "1px solid #ddd",
@@ -176,23 +189,6 @@ function BoardDisplay({
 }
 
 
-// from https://codesandbox.io/s/requestanimationframe-with-hooks-0kzh3?from-embed
-const useAnimationFrame = (callback) => {
-  const requestRef = useRef()
-  const previousTimeRef = useRef()
-  useEffect(() => {
-      const animate = time => {
-          if (previousTimeRef.current !== undefined) {
-              const deltaMs = time - previousTimeRef.current
-              callback(deltaMs)
-          }
-          previousTimeRef.current = time
-          requestRef.current = requestAnimationFrame(animate)
-      }
-      requestRef.current = requestAnimationFrame(animate)
-      return () => cancelAnimationFrame(requestRef.current)
-  }, [])
-}
 
 function GameContainer({game}) {
   const [gameViewModel, setGameViewModel] = useState(game.getViewModel())
@@ -209,7 +205,7 @@ function GameContainer({game}) {
     availableDropTargetIds={currentDraggedId ? game.getValidDropTargetIds(currentDraggedId) : []}
     onCardDragStart={id => {setCurrentDraggedId(id)}}
     onCardDragEnd={_ => {setCurrentDraggedId(null)}}
-    onCardDrop={(slotId) => {game.onMoveCardToSlot(currentDraggedId, slotId)}}
+    onDropCardOnSlot={(slotId) => {game.onDropCardOnSlot(currentDraggedId, slotId)}}
     onDrawDeckClick={_ => {game.onDrawDeckClick()}}
   />
 }
