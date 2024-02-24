@@ -119,12 +119,18 @@ const Hand = ({
   cards, 
   onCardDragStart = (cardId) => {},
   onCardDragEnd = (cardId) => {},
-  onCardDrop = () => {}
+  onCardDrop = () => {},
+  currentDraggedId = null,
 }) => <div style={{
   position: "absolute",
   left: 80,
-  top: 300
-}}>
+  top: 300,
+  width: "100%",
+  height: CARD_HEIGHT
+}}
+onDragOver={e => { e.preventDefault(); return false }}
+onDrop = {onCardDrop}
+>
 {
   cards.map((c, idx) => <div key={c.id} style={{
     position: "absolute",
@@ -151,7 +157,9 @@ function BoardDisplay({
   onCardDragStart = (cardId) => {},
   onCardDragEnd = (cardId) => {},
   onDropCardOnSlot = (slotId) => {},
-  availableDropTargetIds = []
+  onDropCardOnHand = () => {},
+  slotIdsWhereDropPossible = [],
+  currentDraggedId = null,
 
 }) {
   return <div
@@ -163,7 +171,7 @@ function BoardDisplay({
     }}>
     {
       slots.map(a => <Slot key={a.id} 
-        dropPossible={availableDropTargetIds.includes(a.id)} 
+        dropPossible={slotIdsWhereDropPossible.includes(a.id)} 
         onCardDragStart={onCardDragStart}
         onCardDragEnd={onCardDragEnd}
         onCardDrop={onDropCardOnSlot}
@@ -173,7 +181,10 @@ function BoardDisplay({
     <Hand 
       cards={hand} 
       onCardDragStart={onCardDragStart} 
-      onCardDragEnd={onCardDragEnd}/>
+      onCardDragEnd={onCardDragEnd}
+      onCardDrop={onDropCardOnHand}
+      currentDraggedId={currentDraggedId}
+      />
     
     <div style={{position: "absolute", bottom: 0}}>
       <div style={{
@@ -202,11 +213,13 @@ function GameContainer({game}) {
 
   return <BoardDisplay
     {...gameViewModel}
-    availableDropTargetIds={currentDraggedId ? game.getValidDropTargetIds(currentDraggedId) : []}
+    slotIdsWhereDropPossible={currentDraggedId ? game.getSlotIdsWhereDropPossible(currentDraggedId) : []}
     onCardDragStart={id => {setCurrentDraggedId(id)}}
     onCardDragEnd={_ => {setCurrentDraggedId(null)}}
     onDropCardOnSlot={(slotId) => {game.onDropCardOnSlot(currentDraggedId, slotId)}}
+    onDropCardOnHand={() => {game.onDropCardOnHand(currentDraggedId)}}
     onDrawDeckClick={_ => {game.onDrawDeckClick()}}
+    currentDraggedId={currentDraggedId}
   />
 }
 
