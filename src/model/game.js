@@ -1,5 +1,4 @@
 import { point } from "./geometry"
-import RiderWaite from "../rider_waite/rider_waite"
 import Deck from "./deck"
 import { starterCards } from "./cards"
 
@@ -19,7 +18,7 @@ class Game {
             "a4": { id: "a4", name: "area 4", position: point(650, 50) },
         }
 
-        this.slottedCards = { "a1": "c1" } // slot id to card id
+        this.slottedCards = {} // slot id to card id
 
         this.drawDeck = new Deck()
         this.discardDeck = new Deck()
