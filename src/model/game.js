@@ -1,4 +1,3 @@
-import { point } from "./geometry"
 import Deck from "./deck"
 import { starterCards } from "./cards"
 
@@ -6,18 +5,14 @@ class Game {
     constructor(handSize = 5) {
 
         this.handSize = handSize
-
         this.hand = []
-
         this.cards = {}
-
         this.slots = {
-            "a1": { id: "a1", name: "area 1", position: point(50, 50) },
-            "a2": { id: "a2", name: "area 2", position: point(250, 50) },
-            "a3": { id: "a3", name: "area 3", position: point(450, 50) },
-            "a4": { id: "a4", name: "area 4", position: point(650, 50) },
+            "a1": { id: "a1", name: "area 1"},
+            "a2": { id: "a2", name: "area 2"},
+            "a3": { id: "a3", name: "area 3"},
+            "a4": { id: "a4", name: "area 4"},
         }
-
         this.slottedCards = {} // slot id to card id
 
         this.drawDeck = new Deck()
@@ -25,7 +20,6 @@ class Game {
 
         this.initializeDrawDeck()
     }
-
 
     initializeDrawDeck() {
         starterCards().forEach(c => {
@@ -75,10 +69,13 @@ class Game {
         } else {
             throw `Can't find current location of card ${cardId}`
         }
-
     }
 
     onDropCardOnSlot(cardId, slotId) {
+        if (this.slottedCards[slotId]) {
+            return // slot busy
+        }
+
         this.removeCardFromItsLocation(cardId)
         if (this.slottedCards[slotId]) {
             throw `Slot ${slotId} already busy!`
@@ -95,6 +92,5 @@ class Game {
         this.drawCard()
     }
 }
-
 
 export default Game
