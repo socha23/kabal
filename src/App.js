@@ -52,15 +52,39 @@ const Card = ({
   </div>
 }
 
+const AURA_STYLE = {
+  borderWidth: 5,
+  padding: 10,
+  borderRadius: 10,
+  colors: {
+    "dropPossible": "green"
+  }
+
+  
+}
+
+const Aura = ({
+  rect, type
+}) => <div style={{
+  position: "absolute",
+  width: rect.w + 2 * (AURA_STYLE.borderWidth + AURA_STYLE.padding),
+  height: height + 2 * (AURA_STYLE.borderWidth + AURA_STYLE.padding),
+  top: position.y - (AURA_STYLE.borderWidth + AURA_STYLE.padding),
+  left: position.x - (AURA_STYLE.borderWidth + AURA_STYLE.padding),
+  borderRadius: AURA_STYLE.borderRadius,
+  padding: AURA_STYLE.padding,
+  borderStyle: "solid",
+  borderColor: AURA_STYLE.colors[type] || "transparent",
+}} />
+
+
+
 const SLOT_STYLE = {
-  slotBorderWidth: 5,
-  slotPadding: 10,
-  slotBorderRadius: 10,
-  slotDroppableBorderColor: "green",
   width: CARD_WIDTH,
   height: CARD_HEIGHT,
   innerBorder: "1px solid #888",
 }
+
 
 const Slot = ({
   id,
@@ -73,22 +97,11 @@ const Slot = ({
   onMouseOut = e => { },
 }) =>
   <div> {/* main container */}
-    <div
+    <Aura rect={new Rect(position.x, position.y, width, height)} type={dropPossible ? "dropPossible" : "none"}/>
+    <div 
       onMouseEnter={onMouseOver}
       onMouseLeave={onMouseOut}
       style={{
-        position: "absolute",
-        width: width + 2 * (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
-        height: height + 2 * (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
-        top: position.y - (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
-        left: position.x - (SLOT_STYLE.slotBorderWidth + SLOT_STYLE.slotPadding),
-        padding: SLOT_STYLE.slotPadding,
-        borderWidth: SLOT_STYLE.slotBorderWidth,
-        borderStyle: "solid",
-        borderColor: dropPossible ? SLOT_STYLE.slotDroppableBorderColor : "transparent",
-        borderRadius: SLOT_STYLE.slotBorderRadius,
-      }} />
-      <div style={{
         border: SLOT_STYLE.innerBorder,
         width: SLOT_STYLE.width,
         height: SLOT_STYLE.height,
@@ -99,8 +112,8 @@ const Slot = ({
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <div>{name}</div>
-      </div>
+      <div>{name}</div>
+    </div>
   </div>
 
 
