@@ -67,13 +67,10 @@ const Slot = ({
   position,
   dropPossible = false,
   name = "Unnamed slot",
-  card = null,
   width = SLOT_STYLE.width,
   height = SLOT_STYLE.height,
-  onMouseDownOnCard = ((e, cardId) => { }),
   onMouseOver = e => { },
   onMouseOut = e => { },
-  cardPositions = {},
 }) =>
   <div> {/* main container */}
     <div
@@ -91,14 +88,6 @@ const Slot = ({
         borderColor: dropPossible ? SLOT_STYLE.slotDroppableBorderColor : "transparent",
         borderRadius: SLOT_STYLE.slotBorderRadius,
       }} />
-    {
-      card && 
-        <Card
-          onMouseDown={e => { onMouseDownOnCard(e, card.id) }}
-          position={cardPositions[card.id]}
-          {...card}
-        />
-    }
       <div style={{
         border: SLOT_STYLE.innerBorder,
         width: SLOT_STYLE.width,
@@ -120,9 +109,6 @@ const DEFAULT_BOARD_HEIGHT = 600
 
 
 const Hand = ({
-  cards,
-  cardPositions,
-  onMouseDownOnCard = ((e, cardId) => { }),
   onMouseOver = e => { },
   onMouseOut = e => { },
 }) => <div>
@@ -137,21 +123,13 @@ const Hand = ({
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
     />
-    {
-      /* cards */
-      cards.map(c => <Card
-        onMouseDown={e => { onMouseDownOnCard(e, c.id) }}
-        position={cardPositions[c.id]}
-        {...c}
-      />
-      )
-    }
   </div>
 
 
 function BoardDisplay({
   slots = [],
   hand = [],
+  cards = [],
   drawDeckSize = 0,
   height = DEFAULT_BOARD_HEIGHT,
   width = DEFAULT_BOARD_WITDH,
@@ -177,21 +155,23 @@ function BoardDisplay({
       height: height,
       position: "relative",
       border: "1px solid black"
-    }}>
+    }}> 
+    {
+      cards.map(c => <Card {...c} 
+        position={cardPositions[c.id]}
+        onMouseDown={e => {onMouseDownOnCard(e, c.id)}}
+      />)
+    }
+
     {
       slots.map(a => <Slot key={a.id}
         dropPossible={slotIdsWhereDropPossible.includes(a.id)}
-        onMouseDownOnCard={onMouseDownOnCard}
         onMouseOver={e => { onMouseOverSlot(e, a.id) }}
         onMouseOut={e => { onMouseOutSlot(e, a.id) }}
-        cardPositions={cardPositions}
         {...a}
       />)
     }
     <Hand
-      cards={hand}
-      cardPositions={cardPositions}
-      onMouseDownOnCard={onMouseDownOnCard}
       onMouseOver={onMouseOverHand}
       onMouseOut={onMouseOutHand}
     />
@@ -226,19 +206,15 @@ function GameContainer({ game }) {
   })
 
   const cardPositions = {}
-  gameViewModel.hand.forEach((card, idx) => cardPositions[card.id] = point(idx * CARD_WIDTH + 20, 400))
-  gameViewModel.slots.forEach(slot => { if (slot.card) { cardPositions[slot.card.id] = slot.position } })
-
+  gameViewModel.hand.forEach((cardId, idx) => cardPositions[cardId] = point(idx * CARD_WIDTH + 20, 400))
+  gameViewModel.slots.forEach(slot => { if (slot.cardId) { cardPositions[slot.cardId] = slot.position } })
   if (currentDraggedId) {
     cardPositions[currentDraggedId] = currentDraggedPosition
   }
+
   return <BoardDisplay
     {...gameViewModel}
     slotIdsWhereDropPossible={currentDraggedId ? game.getSlotIdsWhereDropPossible(currentDraggedId) : []}
-    onCardDragStart={id => { console.log("DRAGSTART"); setCurrentDraggedId(id) }}
-    onCardDragEnd={_ => { setCurrentDraggedId(null) }}
-    onDropCardOnSlot={(slotId) => { game.onDropCardOnSlot(currentDraggedId, slotId) }}
-    onDropCardOnHand={() => { game.onDropCardOnHand(currentDraggedId) }}
     onDrawDeckClick={_ => { game.onDrawDeckClick() }}
     currentDraggedId={currentDraggedId}
     cardPositions={cardPositions}
@@ -268,10 +244,14 @@ function GameContainer({ game }) {
       setMouseOverSlotId(overSlot)
     }}
     onMouseUp={e => {
+      if (!currentDraggedId) {
+        return
+      }
       if (mouseOverSlotId) {
         game.onDropCardOnSlot(currentDraggedId, mouseOverSlotId)
       }
-      setCurrentDraggedId(null)
+      setTimeout(() => {setCurrentDraggedId(null)}, 50)
+      
     }}
   />
 }

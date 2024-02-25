@@ -47,13 +47,14 @@ class Game {
     }
 
     getViewModel() {
-        return {
+        const model = {
             slots: Object.values(this.slots)
-                .map(s => this.slottedCards[s.id] ? { ...s, card: this.cards[this.slottedCards[s.id]] } : s),
-            hand: this.hand
-                .map(cardId => this.cards[cardId]),
+                .map(s => ({ ...s, cardId: this.slottedCards[s.id]})),
+            hand: this.hand,
+            cards: Object.values(this.cards).filter(c => this.hand.includes(c.id) || Object.values(this.slottedCards).includes(c.id)),
             drawDeckSize: this.drawDeck.size(),
         }
+        return model
     }
 
     findSlotIdByCardId(cardId) {
